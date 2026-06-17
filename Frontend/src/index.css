@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-chat-user: var(--chat-user);
+  --color-chat-ai: var(--chat-ai);
+}
+
+:root {
+  /* Premium Scholar Palette - Refined with vibrant accents */
+  --radius: 1.25rem;
+
+  /* Background: Soft Cream (#FBF8F1) with a touch of warmth */
+  --background: #FBF8F1;
+  --foreground: #0F172A;
+
+  /* Primary: Deep Midnight (#1B253C) */
+  --primary: #1B253C;
+  --primary-foreground: #FFFFFF;
+
+  /* Card: Pure White with elevation */
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+
+  /* Vibrant Accents for "Coloring" */
+  --indigo-vibrant: #6366F1;
+  --emerald-vibrant: #10B981;
+  --amber-vibrant: #F59E0B;
+  --rose-vibrant: #F43F5E;
+
+  --secondary: #F8FAFC;
+  --secondary-foreground: #475569;
+
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+
+  --accent: #EEF2FF;
+  --accent-foreground: #4338CA;
+
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #6366F1;
+
+  --success: #059669;
+  --success-foreground: #FFFFFF;
+
+  --warning: #D97706;
+  --warning-foreground: #FFFFFF;
+
+  --chat-user: #1B253C;
+  --chat-ai: #FFFFFF;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer utilities {
+  .perspective-1000 { perspective: 1000px; }
+  .preserve-3d { transform-style: preserve-3d; }
+  .backface-hidden { backface-visibility: hidden; }
+  .rotate-y-180 { transform: rotateY(180deg); }
+
+  .glass {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+  }
+
+  /* Sophisticated Mesh Gradient Backgrounds */
+  .mesh-indigo {
+    background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+                      radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.05) 0px, transparent 50%);
+  }
+
+  .mesh-emerald {
+    background-image: radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+                      radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+  }
+
+  .mesh-rose {
+    background-image: radial-gradient(at 0% 0%, rgba(244, 63, 94, 0.1) 0px, transparent 50%),
+                      radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.05) 0px, transparent 50%);
+  }
+
+  .mesh-amber {
+    background-image: radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.1) 0px, transparent 50%),
+                      radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.05) 0px, transparent 50%);
+  }
+
+  .text-gradient-indigo {
+    background: linear-gradient(135deg, #1B253C 0%, #6366F1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gradient-emerald {
+    background: linear-gradient(135deg, #064E3B 0%, #10B981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .glow-indigo { box-shadow: 0 0 25px rgba(99, 102, 241, 0.2); }
+  .glow-emerald { box-shadow: 0 0 25px rgba(16, 185, 129, 0.2); }
+  .glow-rose { box-shadow: 0 0 25px rgba(244, 63, 94, 0.2); }
+  .glow-amber { box-shadow: 0 0 25px rgba(245, 158, 11, 0.2); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-15px) rotate(0.5deg); }
+}
+
+@keyframes pulse-vibrant {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.02); }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-pulse-vibrant {
+  animation: pulse-vibrant 3s ease-in-out infinite;
+}
+
+/* Custom Professional Scrollbar */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--color-background); }
+::-webkit-scrollbar-thumb {
+  background: #E2E8F0;
+  border-radius: 20px;
+  border: 3px solid var(--color-background);
+}
+::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
