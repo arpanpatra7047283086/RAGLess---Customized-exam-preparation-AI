@@ -1,99 +1,115 @@
-export const register = async ({ name, email, password }: { name: string, email: string, password: string }): Promise<{ message: string; status: number; data?: { name?: string; id?: string; email?: string } }> => {
+// API Types
+export interface UserData {
+    id?: string;
+    name?: string;
+    email?: string;
+}
+
+export interface ApiResponse<T = any> {
+    message: string;
+    status: number;
+    data?: T;
+}
+
+export interface QueryAgentResponse {
+    doc_id: string | null;
+    operation: string;
+    query: string;
+    response: string;
+}
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+/**
+ * Authentication: Register a new user
+ */
+export const register = async (payload: { name: string, email: string, password: string }): Promise<ApiResponse<UserData>> => {
     try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/signup`, {
+        const response = await fetch(`${BACKEND_URL}/signup`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                name,
-                email,
-                password
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
         });
 
         const result = await response.json();
         return {
             status: result.status || response.status,
-            message: result?.message ?? "",
+            message: result?.message ?? "Registration failed",
             data: result?.data
         };
     } catch (error) {
-        console.error(error);
+        console.error("Signup Error:", error);
         return { status: 500, message: "Network error" };
     }
 };
 
-export const login = async ({ email, password }: { email: string, password: string }): Promise<{ message: string; status: number; data?: { name?: string; email?: string; id?: string } }> => {
+/**
+ * Authentication: Login existing user
+ */
+export const login = async (payload: { email: string, password: string }): Promise<ApiResponse<UserData>> => {
     try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/login`, {
+        const response = await fetch(`${BACKEND_URL}/login`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                email,
-                password
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
         });
 
         const result = await response.json();
         return {
             status: result.status || response.status,
-            message: result?.message ?? "",
+            message: result?.message ?? "Login failed",
             data: result?.data
         };
     } catch (error) {
-        console.error(error);
+        console.error("Login Error:", error);
         return { status: 500, message: "Network error" };
     }
 };
 
-export const downloadPdf = async ({ url, filename }: { url: string, filename: string }): Promise<{ message: string; status: number }> => {
+/**
+ * Document Processing: Upload/Process PDF from URL
+ */
+export const downloadPdf = async (payload: { url: string, filename: string }): Promise<ApiResponse> => {
     try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/download_pdf`, {
+        const response = await fetch(`${BACKEND_URL}/download_pdf`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                url,
-                filename
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
         });
 
         const result = await response.json();
         return {
             status: result.status || response.status,
-            message: result?.message ?? ""
+            message: result?.message ?? "Processing failed"
         };
     } catch (error) {
-        console.error(error);
+        console.error("PDF Download Error:", error);
         return { status: 500, message: "Network error" };
     }
 };
 
-export const queryAgent = async ({ doc_id, query, operation }: { doc_id: string | null, query: string, operation: string }): Promise<{ response: string; status: number }> => {
+/**
+ * AI Agent: Query the study assistant
+ */
+export const queryAgent = async (payload: { doc_id: string | null, query: string, operation: string }): Promise<QueryAgentResponse | { status: number, response: string }> => {
     try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/query_agent`, {
+        const response = await fetch(`${BACKEND_URL}/query_agent`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                doc_id,
-                query,
-                operation
-            })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
         });
 
         const result = await response.json();
-        return {
-            status: response.status,
-            response: result?.response ?? ""
-        };
+        if (response.ok) {
+            return result as QueryAgentResponse;
+        } else {
+            return {
+                status: response.status,
+                response: result?.response ?? "Agent query failed"
+            };
+        }
     } catch (error) {
-        console.error(error);
+        console.error("Agent Query Error:", error);
         return { status: 500, response: "Network error" };
     }
 };

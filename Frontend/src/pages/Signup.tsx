@@ -9,6 +9,7 @@ export function SignupPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
     const navigate = useNavigate();
     const { setUserEmail, setUserName, setUserId } = useUserContext();
@@ -20,16 +21,23 @@ export function SignupPage() {
             return;
         }
 
-        const result = await register({ name, email, password });
-        if (result?.status === 201) {
-            setUserEmail(result.data?.email ?? "");
-            setUserName(result.data?.name ?? "");
-            setUserId(result.data?.id ?? "");
+        setIsLoading(true);
+        try {
+            const result = await register({ name, email, password });
+            if (result.status === 201 && result.data) {
+                setUserEmail(result.data.email ?? "");
+                setUserName(result.data.name ?? "");
+                setUserId(result.data.id ?? "");
 
-            toast.success("New User Created");
-            navigate('/');
-        } else {
-            toast.error("User already Exists!");
+                toast.success("Account Created Successfully");
+                navigate('/');
+            } else {
+                toast.error(result.message || "User already exists or registration failed.");
+            }
+        } catch (error) {
+            toast.error("Failed to connect to the server.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -135,9 +143,10 @@ export function SignupPage() {
                         </div>
                         <button
                             type="submit"
-                            className="w-full rounded-2xl bg-[#1B253C] py-5 text-sm font-bold text-white shadow-xl shadow-indigo-100 transition-all hover:bg-emerald-600 hover:-translate-y-1 active:scale-95 mt-4"
+                            disabled={isLoading}
+                            className="w-full rounded-2xl bg-[#1B253C] py-5 text-sm font-bold text-white shadow-xl shadow-indigo-100 transition-all hover:bg-emerald-600 disabled:opacity-50 mt-4"
                         >
-                            Create My Account
+                            {isLoading ? "Creating Account..." : "Create My Account"}
                         </button>
                     </form>
 

@@ -3,6 +3,7 @@ import { Header } from "../components/Header";
 import { FlashcardsView } from "../components/study/FlashcardsView";
 import { QuizView } from "../components/study/QuizView";
 import { SummaryView } from "../components/study/SummaryView";
+import { queryAgent, QueryAgentResponse } from "../utils/API_Calls";
 
 const SUBJECTS = [
     "Mathematics", "Physics", "Chemistry", "Biology",
@@ -23,7 +24,7 @@ interface Message {
     role: "user" | "ai";
     content: string;
     type: Mode;
-    data?: unknown;
+    data?: QueryAgentResponse;
 }
 
 export function StudyPage() {
@@ -33,19 +34,40 @@ export function StudyPage() {
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!input.trim() || !selectedSubject) return;
 
+        // 1. Add User Message
         const userMsg: Message = { role: "user", content: input, type: selectedMode };
         setMessages((prev) => [...prev, userMsg]);
         setInput("");
         setIsLoading(true);
+        
+        try {
+            // 2. Call Centralized API
+            const result = await queryAgent({
+                doc_id: selectedSubject,
+                query: input,
+                operation: selectedMode === "chat" ? "conversation" : selectedMode,
+            });
 
-        setTimeout(() => {
-            const aiMsg = getMockResponse(selectedMode, input);
-            setMessages((prev) => [...prev, aiMsg]);
+            // 3. Handle AI Response
+            if ("response" in result) {
+                const aiMsg: Message = {
+                    role: "ai",
+                    content: result.response,
+                    type: selectedMode,
+                    data: result as QueryAgentResponse
+                };
+                setMessages((prev) => [...prev, aiMsg]);
+            } else {
+                console.error("API Error:", result);
+            }
+        } catch (error) {
+            console.error("Network Error:", error);
+        } finally {
             setIsLoading(false);
-        }, 1200);
+        }
     };
 
     const activeModeColor = MODES.find(m => m.id === selectedMode)?.color || "indigo";
@@ -62,13 +84,6 @@ export function StudyPage() {
         emerald: "text-emerald-600",
         amber: "text-amber-600",
         rose: "text-rose-600",
-    };
-
-    const borderColors: Record<string, string> = {
-        indigo: "border-indigo-100",
-        emerald: "border-emerald-100",
-        amber: "border-amber-100",
-        rose: "border-rose-100",
     };
 
     return (
@@ -160,7 +175,12 @@ export function StudyPage() {
                                         </span>
                                     </div>
                                 </div>
-                                <button className="text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest">Clear Session</button>
+                                <button
+                                    onClick={() => setMessages([])}
+                                    className="text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest"
+                                >
+                                    Clear Session
+                                </button>
                             </div>
 
                             {/* Messages Container */}
@@ -179,11 +199,11 @@ export function StudyPage() {
                                             : "bg-white text-[#1B253C] border border-slate-100 shadow-sm"
                                         }`}>
                                             {msg.role === "ai" && msg.type === "summary" ? (
-                                                <SummaryView data={msg.data as { response: string }} />
+                                                <SummaryView data={msg.data as QueryAgentResponse} />
                                             ) : msg.role === "ai" && msg.type === "flashcards" ? (
-                                                <FlashcardsView data={msg.data as { response: string }} />
+                                                <FlashcardsView data={msg.data as QueryAgentResponse} />
                                             ) : msg.role === "ai" && msg.type === "quiz" ? (
-                                                <QuizView data={msg.data as { response: string }} />
+                                                <QuizView data={msg.data as QueryAgentResponse} />
                                             ) : (
                                                 <p className="whitespace-pre-wrap font-medium text-lg leading-relaxed">{msg.content}</p>
                                             )}
@@ -230,61 +250,4 @@ export function StudyPage() {
             </div>
         </div>
     );
-}
-
-function getMockResponse(mode: Mode, query: string): Message {
-    if (mode === "summary") {
-        return {
-            role: "ai",
-            content: "",
-            type: "summary",
-            data: {
-                doc_id: "mock-id",
-                operation: "summary",
-                query,
-                response: "The transition from traditional networks to Convolutional Neural Networks (CNNs) marks a significant change in feature engineering, characterized by a hierarchical structure that learns spatial hierarchies through backpropagation. CNNs consist of four main layers: Convolutional, Pooling, Activation Function, and Fully Connected layers, with the convolutional layer being central to feature extraction. CNNs learn filters that activate for specific features at defined spatial positions, with parameters like filter size and stride influencing feature representation. ReLU activation offers advantages like representational sparsity and computational simplicity, overcoming issues like the vanishing gradient problem seen with sigmoid and tanh functions.",
-            },
-        };
-    }
-    if (mode === "flashcards") {
-        return {
-            role: "ai",
-            content: "",
-            type: "flashcards",
-            data: {
-                doc_id: "mock-id",
-                operation: "flashcards",
-                query,
-                response: JSON.stringify([
-                    "Activation functions introduce non-linearity in neural networks, enabling them to learn complex patterns and differentiate intricate data structures effectively.",
-                    "ReLU is a widely used activation function that outputs the input directly if positive, and zero otherwise, promoting efficient training in deep networks.",
-                    "ReLU overcomes the vanishing gradient problem, allowing gradients to flow effectively through layers, thus enhancing learning in deeper architectures.",
-                    "Pooling layers reduce dimensionality in CNNs while preserving essential information, minimizing computational costs and mitigating overfitting.",
-                    "Residual blocks in ResNet reformulate layers to learn residual functions, enabling effective gradient flow and optimization in very deep networks.",
-                ]),
-            },
-        };
-    }
-    if (mode === "quiz") {
-        return {
-            role: "ai",
-            content: "",
-            type: "quiz",
-            data: {
-                doc_id: "mock-id",
-                operation: "quiz",
-                query,
-                response: JSON.stringify([
-                    { question: "What is the primary purpose of CNNs?", options: ["Process visual data", "Arithmetic calculations", "Store data", "Generate numbers"], correct_ans: "Process visual data" },
-                    { question: "Which layer detects edges and salient features?", options: ["Pooling", "Activation", "Fully Connected", "Convolutional"], correct_ans: "Convolutional" },
-                    { question: "What does ReLU introduce in CNNs?", options: ["Non-linearity", "Convolution", "Dimensionality reduction", "Layer connections"], correct_ans: "Non-linearity" },
-                ]),
-            },
-        };
-    }
-    return {
-        role: "ai",
-        content: `That's a great question about "${query}". Based on the study materials, here is what I can tell you:\n\nThe topic you're asking about involves several key concepts that are fundamental to understanding the subject. Let me break it down for you step by step...\n\nWould you like me to elaborate on any specific aspect?`,
-        type: "chat",
-    };
 }

@@ -7,6 +7,7 @@ import { Toaster, toast } from "sonner";
 export function LoginPage() {
     const [email, setEmail] = useState("user@example.com");
     const [password, setPassword] = useState("password123");
+    const [isLoading, setIsLoading] = useState(false);
 
     const navigate = useNavigate();
     const { setUserEmail, setUserName, setUserId } = useUserContext();
@@ -14,6 +15,7 @@ export function LoginPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Demo Account logic
         if (email === "user@example.com" && password === "password123") {
             setUserEmail("user@example.com");
             setUserName("Scholar Guest");
@@ -23,16 +25,24 @@ export function LoginPage() {
             return;
         }
 
-        const result = await login({ email, password });
-        if (result?.status === 200) {
-            setUserEmail(result?.data?.email ?? "");
-            setUserName(result?.data?.name ?? "");
-            setUserId(result?.data?.id ?? "");
+        setIsLoading(true);
+        try {
+            const result = await login({ email, password });
 
-            toast.success("User Logged In");
-            navigate('/');
-        } else {
-            toast.error("User does not exist! Kindly Sign Up");
+            if (result.status === 200 && result.data) {
+                setUserEmail(result.data.email ?? "");
+                setUserName(result.data.name ?? "");
+                setUserId(result.data.id ?? "");
+
+                toast.success("Login Successful");
+                navigate('/');
+            } else {
+                toast.error(result.message || "Invalid credentials. Please try again.");
+            }
+        } catch (error) {
+            toast.error("Failed to connect to the server.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -42,7 +52,6 @@ export function LoginPage() {
 
             {/* Left Panel - Hero Section */}
             <div className="hidden lg:flex flex-col justify-between w-[45%] bg-[#1B253C] p-16 text-white relative overflow-hidden">
-                {/* Abstract Color Blobs for "Better Look" */}
                 <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] -mr-48 -mt-48" />
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] -ml-48 -mb-48" />
 
@@ -91,41 +100,32 @@ export function LoginPage() {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-400">Email Address</label>
-                            <div className="relative">
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    placeholder="user@example.com"
-                                    className="w-full rounded-2xl border border-slate-100 bg-slate-50/50 px-5 py-4 text-sm font-medium text-[#1B253C] placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all"
-                                />
-                                <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206"></path></svg>
-                                </div>
-                            </div>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                placeholder="user@example.com"
+                                className="w-full rounded-2xl border border-slate-100 bg-slate-50/50 px-5 py-4 text-sm font-medium text-[#1B253C] placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all"
+                            />
                         </div>
                         <div>
                             <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-400">Security Password</label>
-                            <div className="relative">
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    placeholder="••••••••••••"
-                                    className="w-full rounded-2xl border border-slate-100 bg-slate-50/50 px-5 py-4 text-sm font-medium text-[#1B253C] placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all"
-                                />
-                                <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 cursor-pointer hover:text-indigo-500">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                </div>
-                            </div>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                placeholder="••••••••••••"
+                                className="w-full rounded-2xl border border-slate-100 bg-slate-50/50 px-5 py-4 text-sm font-medium text-[#1B253C] placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all"
+                            />
                         </div>
                         <button
                             type="submit"
-                            className="w-full rounded-2xl bg-[#1B253C] py-5 text-sm font-bold text-white shadow-xl shadow-indigo-100 transition-all hover:bg-indigo-600 hover:-translate-y-1 active:scale-95 mt-4"
+                            disabled={isLoading}
+                            className="w-full rounded-2xl bg-[#1B253C] py-5 text-sm font-bold text-white shadow-xl shadow-indigo-100 transition-all hover:bg-indigo-600 disabled:opacity-50 mt-4"
                         >
-                            Sign In to System
+                            {isLoading ? "Signing In..." : "Sign In to System"}
                         </button>
                     </form>
 
