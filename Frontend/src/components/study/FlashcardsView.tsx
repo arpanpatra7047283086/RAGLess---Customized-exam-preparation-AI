@@ -7,7 +7,6 @@ interface FlashcardsViewProps {
 export function FlashcardsView({ data }: FlashcardsViewProps) {
     const cards: string[] = JSON.parse(data.response);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [isFlipped, setIsFlipped] = useState(false);
 
     const handleDownload = () => {
         const content = cards.map((c, i) => `Card ${i + 1}:\n${c}`).join("\n\n---\n\n");
@@ -15,97 +14,44 @@ export function FlashcardsView({ data }: FlashcardsViewProps) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "scholar-ai-flashcards.txt";
+        a.download = "flashcards.txt";
         a.click();
         URL.revokeObjectURL(url);
     };
 
-    const nextCard = () => {
-        if (currentIndex < cards.length - 1) {
-            setIsFlipped(false);
-            setTimeout(() => setCurrentIndex(currentIndex + 1), 150);
-        }
-    };
-
-    const prevCard = () => {
-        if (currentIndex > 0) {
-            setIsFlipped(false);
-            setTimeout(() => setCurrentIndex(currentIndex - 1), 150);
-        }
-    };
-
     return (
-        <div className="space-y-8">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1B253C]/5 text-[#1B253C]">
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                    </div>
-                    <div>
-                        <span className="text-xs font-bold uppercase tracking-widest text-slate-400 block">Reviewing Deck</span>
-                        <span className="text-[10px] font-bold text-[#1B253C]">CARD {currentIndex + 1} OF {cards.length}</span>
-                    </div>
-                </div>
+        <div>
+            <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Flashcard {currentIndex + 1} of {cards.length}
+                </span>
                 <button
                     onClick={handleDownload}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-600 transition-all hover:bg-slate-50 hover:text-[#1B253C] active:scale-95"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
-                    Export Deck
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    Download All
                 </button>
             </div>
-
-            {/* Flashcard Component */}
-            <div
-                className="perspective-1000 group cursor-pointer"
-                onClick={() => setIsFlipped(!isFlipped)}
-            >
-                <div className={`relative h-64 w-full transition-all duration-500 preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
-                    {/* Front */}
-                    <div className="absolute inset-0 backface-hidden rounded-[32px] bg-white border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col items-center justify-center p-10 text-center">
-                        <span className="absolute top-6 left-6 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Question</span>
-                        <p className="text-lg font-serif text-[#1B253C] leading-relaxed">
-                            {cards[currentIndex].split('?')[0]}?
-                        </p>
-                        <div className="mt-8 flex items-center gap-2 text-[10px] font-bold text-[#1B253C]/40 uppercase tracking-widest">
-                            <span>Tap to reveal answer</span>
-                            <svg className="w-3 h-3 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                    </div>
-                    {/* Back */}
-                    <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-[32px] bg-[#1B253C] p-10 flex flex-col items-center justify-center text-center text-white shadow-2xl">
-                        <span className="absolute top-6 left-6 text-[10px] font-bold text-white/30 uppercase tracking-widest">Core Concept</span>
-                        <p className="text-base font-medium leading-relaxed">
-                            {cards[currentIndex].includes('?') ? cards[currentIndex].split('?')[1] : cards[currentIndex]}
-                        </p>
-                    </div>
-                </div>
+            <div className="rounded-lg border border-border bg-background p-4 min-h-[100px] flex items-center">
+                <p className="leading-relaxed">{cards[currentIndex]}</p>
             </div>
-
-            {/* Controls */}
-            <div className="flex items-center justify-center gap-6">
+            <div className="mt-3 flex items-center justify-between">
                 <button
-                    onClick={(e) => { e.stopPropagation(); prevCard(); }}
+                    onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
                     disabled={currentIndex === 0}
-                    className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-400 transition-all hover:border-[#1B253C] hover:text-[#1B253C] active:scale-90 disabled:opacity-20 disabled:hover:border-slate-200"
+                    className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground disabled:opacity-40"
                 >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                    ← Previous
                 </button>
-
-                <div className="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                        className="h-full bg-[#1B253C] transition-all duration-500"
-                        style={{ width: `${((currentIndex + 1) / cards.length) * 100}%` }}
-                    />
-                </div>
-
                 <button
-                    onClick={(e) => { e.stopPropagation(); nextCard(); }}
+                    onClick={() => setCurrentIndex((i) => Math.min(cards.length - 1, i + 1))}
                     disabled={currentIndex === cards.length - 1}
-                    className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-400 transition-all hover:border-[#1B253C] hover:text-[#1B253C] active:scale-90 disabled:opacity-20 disabled:hover:border-slate-200"
+                    className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground disabled:opacity-40"
                 >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"></path></svg>
+                    Next →
                 </button>
             </div>
         </div>

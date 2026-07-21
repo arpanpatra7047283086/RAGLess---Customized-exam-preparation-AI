@@ -1,178 +1,120 @@
 import json
 import os
+import re
 from pathlib import Path
 from typing import List
 
 from dotenv import load_dotenv
-from langchain.agents import create_agent
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openrouter import ChatOpenRouter
-from pydantic import BaseModel
-
 from Workflow.tool import retrieve_context
 
 load_dotenv()
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-WORKSPACE = BASE_DIR / "workspace"
-
-openrouter_api_key = os.getenv("OPEN_ROUTER_API_KEY")
-
+# Set up the model - Ensure OPENROUTER_API_KEY is in your .env
 model = ChatOpenRouter(
     model="openai/gpt-4o-mini",
-    temperature=0.3,
+    temperature=0.1,
 )
 
+def extract_json(text: str):
+    """Robustly extract JSON array or object from AI string response."""
+    try:
+        text = text.strip()
+        if text.startswith("```"):
+            match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', text)
+            if match:
+                text = match.group(1)
+
+        start_idx = min(text.find('['), text.find('{'))
+        if start_idx == -1: start_idx = 0
+        end_idx = max(text.rfind(']'), text.rfind('}'))
+        if end_idx == -1: end_idx = len(text)
+
+        return text[start_idx:end_idx+1].strip()
+    except Exception:
+        return text.strip()
 
 def extraction(state: dict):
+    """Initial node to ensure state keys are present."""
     return {
         "doc_id": state.get("doc_id"),
-        "operation": state["operation"],
-        "query": state["query"],
+        "operation": state.get("operation"),
+        "query": state.get("query")
     }
 
-
 def _context_text(state: dict) -> str:
-    context = state.get("context", "")
-    if isinstance(context, dict):
-        return context.get("context", "")
-    return str(context)
-
-
-def _get_structured_field(response: dict, field: str):
-    if field in response:
-        return response[field]
-
-    structured = response.get("structured_response")
-    if isinstance(structured, dict):
-        return structured.get(field)
-    if isinstance(structured, BaseModel):
-        return getattr(structured, field, None)
-
-    return None
-
-# --- RETRIEVAL AGENT ---
-RETRIEVAL_PROMPT = (
-    "You are a retrieval assistant. Your goal is to find relevant information for the user query. "
-    "Use the 'retrieve_context' tool to search the database. "
-    "Return the retrieved information in the 'data' field. "
-    "If no relevant information is found, set 'data' to 'No relevant context found.'"
-)
-
-class retrievedAgentResponse(BaseModel):
-    data: str
-
-retrieval_agent = create_agent(
-    model,
-    tools=[retrieve_context],
-    response_format=retrievedAgentResponse,
-    system_prompt=RETRIEVAL_PROMPT
-)
+    return str(state.get("context", ""))
 
 def retrieval(state: dict):
-    response = retrieval_agent.invoke({
-        "messages": [HumanMessage(content=state.get("query"))]
-    })
-    data = _get_structured_field(response, "data")
-    return {"context": data or "No relevant context found."}
+    # If context is manually provided (e.g. for testing), use it and skip retrieval
+    if state.get("context") and len(str(state["context"]).strip()) > 5:
+        print("Using provided manual context.")
+        return {"context": state["context"]}
 
+    query = state.get("query")
+    doc_id = state.get("doc_id")
+    print(f"Retrieving context for: {query} (Subject: {doc_id})")
 
-# --- SUMMARY AGENT ---
-SUMMARY_PROMPT = (
-    "You are a summarization agent. Summarize the provided context. "
-    "Rule 1: Length should be approximately half of the original. "
-    "Rule 2: Include all key points. "
-    "Rule 3: Do not add conversational filler or buzzwords. "
-    "Rule 4: Output a compact, integrated summary."
-)
+    try:
+        # Pass doc_id to the retrieval tool for targeted searching
+        context_data = retrieve_context.invoke({"query": query, "doc_id": doc_id})
+    except Exception as e:
+        print(f"Retrieval Error: {e}")
+        context_data = "Error retrieving context from database."
 
-class summaryAgentResponse(BaseModel):
-    summary: str
+    if not context_data or "No documents" in context_data:
+        context_data = f"I could not find specific information about {doc_id}. Please ensure you have uploaded the relevant study material in the Admin panel."
 
-summaryAgent = create_agent(
-    model,
-    system_prompt=SUMMARY_PROMPT,
-    response_format=summaryAgentResponse,
-)
+    return {"context": context_data}
+
+# --- Specialized Agents ---
 
 def solveForSummary(state: dict):
     context = _context_text(state)
-    response = summaryAgent.invoke({"messages": [HumanMessage(content=f"Context:\n{context}")]})
-    summary = _get_structured_field(response, "summary")
-    return {"messages": [AIMessage(content=summary or "Unable to generate summary.")]}
-
-
-# --- QUIZ AGENT ---
-QUIZ_PROMPT = (
-    "You are a Quiz Generation Agent. Generate 5 multiple-choice questions based strictly on the context. "
-    "Each question must have 4 options and 1 correct answer. Do not add explanations."
-)
-
-class QuizItem(BaseModel):
-    question: str
-    options: List[str]
-    correct_ans: str
-
-class quizAgentResponse(BaseModel):
-    quiz: List[QuizItem]
-
-quizAgent = create_agent(
-    model,
-    system_prompt=QUIZ_PROMPT,
-    response_format=quizAgentResponse,
-)
+    doc_id = state.get("doc_id", "the subject")
+    prompt = f"Summarize the following study material about {doc_id} concisely:\n\n{context}"
+    response = model.invoke([
+        SystemMessage(content="You are a professional study assistant. Provide concise, factual summaries."),
+        HumanMessage(content=prompt)
+    ])
+    return {"messages": [AIMessage(content=response.content)]}
 
 def solveForQuiz(state: dict):
     context = _context_text(state)
-    response = quizAgent.invoke({"messages": [HumanMessage(content=f"Context:\n{context}")]})
-    quiz = _get_structured_field(response, "quiz")
-    return {"messages": [AIMessage(content=json.dumps(quiz or [], default=lambda x: x.model_dump()))]}
+    doc_id = state.get("doc_id", "the subject")
+    prompt = (
+        f"Based ONLY on the context below about {doc_id}, generate a 5-question multiple choice quiz.\n"
+        f"Format the output as a RAW JSON array of objects with keys: question, options (array of 4), correct_ans.\n"
+        f"Context: {context}"
+    )
+    response = model.invoke([
+        SystemMessage(content="You are a quiz generator. Output ONLY raw JSON."),
+        HumanMessage(content=prompt)
+    ])
+    return {"messages": [AIMessage(content=extract_json(response.content))]}
 
-
-# --- FLASHCARD AGENT ---
-FLASH_PROMPT = (
-    "You are a flashcard generation agent. Create distinct, meaningful flashcards from the context. "
-    "Each flashcard should be a single descriptive line (20-25 words)."
-)
-
-class flashAgentResponse(BaseModel):
-    flash: List[str]
-
-flashAgent = create_agent(
-    model,
-    system_prompt=FLASH_PROMPT,
-    response_format=flashAgentResponse,
-)
+def solveForConversation(state: dict):
+    query = state.get("query")
+    context = _context_text(state)
+    doc_id = state.get("doc_id", "the subject")
+    prompt = f"Subject: {doc_id}\nContext: {context}\n\nUser Question: {query}"
+    response = model.invoke([
+        SystemMessage(content="You are an expert tutor. Answer using the provided context only."),
+        HumanMessage(content=prompt)
+    ])
+    return {"messages": [AIMessage(content=response.content)]}
 
 def solveForFlashCards(state: dict):
     context = _context_text(state)
-    response = flashAgent.invoke({"messages": [HumanMessage(content=f"Context:\n{context}")]})
-    flashcards = _get_structured_field(response, "flash")
-    return {"messages": [AIMessage(content=json.dumps(flashcards or []))]}
-
-
-# --- CONVERSATION AGENT ---
-CONVO_PROMPT = (
-    "You are a helpful study assistant. Use the provided context to answer the user's question. "
-    "Rule 1: If the context is 'No relevant context found' or doesn't contain the answer, "
-    "politely state that you can only answer questions based on the uploaded documents. "
-    "Rule 2: Keep the answer concise and direct. Do not hallucinate information outside the context."
-)
-
-class convoAgentResponse(BaseModel):
-    reply: str
-
-conversationAgent = create_agent(
-    model,
-    system_prompt=CONVO_PROMPT,
-    response_format=convoAgentResponse,
-)
-
-def solveForConversation(state: dict):
-    context = _context_text(state)
-    query = state.get("query", "")
-    response = conversationAgent.invoke({
-        "messages": [HumanMessage(content=f"Context: {context}\n\nUser Question: {query}")]
-    })
-    reply = _get_structured_field(response, "reply")
-    return {"messages": [AIMessage(content=reply or "I'm sorry, I couldn't find an answer in the documents.")]}
+    doc_id = state.get("doc_id", "the subject")
+    prompt = (
+        f"Generate 5 study flashcards from the context about {doc_id}. "
+        f"Format as a RAW JSON array of strings like ['Question? Answer'].\n"
+        f"Context: {context}"
+    )
+    response = model.invoke([
+        SystemMessage(content="You are a flashcard generator. Output ONLY raw JSON array of strings."),
+        HumanMessage(content=prompt)
+    ])
+    return {"messages": [AIMessage(content=extract_json(response.content))]}

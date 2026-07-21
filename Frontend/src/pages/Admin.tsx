@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { Header } from "../components/Header";
-import { Footer } from "../components/Footer";
-import { downloadPdf } from "../utils/API_Calls";
-import { toast, Toaster } from "sonner";
 
-const ADMIN_PASSWORD = "admin123";
+const ADMIN_PASSWORD = "admin123"; // Frontend-only demo password
 
 export function AdminPage() {
     const [authenticated, setAuthenticated] = useState(false);
@@ -13,9 +10,9 @@ export function AdminPage() {
 
     const [name, setName] = useState("");
     const [driveLink, setDriveLink] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
     const [formErrors, setFormErrors] = useState<{ name?: string; driveLink?: string }>({});
     const [submissions, setSubmissions] = useState<{ name: string; driveLink: string }[]>([]);
+    const [successMsg, setSuccessMsg] = useState("");
 
     const handlePasswordSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -27,140 +24,137 @@ export function AdminPage() {
         }
     };
 
-    const handleFormSubmit = async (e: React.FormEvent) => {
+    const validateDriveLink = (link: string): boolean => {
+        return link.includes("drive.google.com");
+    };
+
+    const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const errors: { name?: string; driveLink?: string } = {};
 
-        if (!name.trim()) errors.name = "Name is required.";
-        if (!driveLink.trim()) errors.driveLink = "Link is required.";
+        if (!name.trim()) {
+            errors.name = "Name is required.";
+        }
+        if (!driveLink.trim()) {
+            errors.driveLink = "Google Drive link is required.";
+        } else if (!validateDriveLink(driveLink)) {
+            errors.driveLink = "Link must contain drive.google.com";
+        }
 
         if (Object.keys(errors).length > 0) {
             setFormErrors(errors);
             return;
         }
 
-        setIsLoading(true);
-        try {
-            // CALL BACKEND API
-            const result = await downloadPdf({
-                url: driveLink.trim(),
-                filename: name.trim() + ".pdf"
-            });
-
-            if (result.status === 201 || result.status === 200) {
-                toast.success(result.message);
-                setSubmissions((prev) => [...prev, { name: name.trim(), driveLink: driveLink.trim() }]);
-                setName("");
-                setDriveLink("");
-            } else {
-                toast.error(result.message);
-            }
-        } catch (error) {
-            toast.error("Failed to communicate with Backend server.");
-        } finally {
-            setIsLoading(false);
-            setFormErrors({});
-        }
+        setFormErrors({});
+        setSubmissions((prev) => [...prev, { name: name.trim(), driveLink: driveLink.trim() }]);
+        setName("");
+        setDriveLink("");
+        setSuccessMsg("Material submitted successfully!");
+        setTimeout(() => setSuccessMsg(""), 3000);
     };
 
     if (!authenticated) {
         return (
-            <div className="min-h-screen flex flex-col bg-[#FBF8F1] mesh-indigo">
+            <div className="min-h-screen bg-background">
                 <Header />
-                <Toaster position="top-center" />
-                <div className="flex-1 flex items-center justify-center px-6 py-16">
-                    <div className="w-full max-w-[440px]">
-                        <div className="rounded-[40px] border border-slate-100 bg-white p-12 shadow-[0_20px_60px_rgba(0,0,0,0.05)] relative overflow-hidden">
-                            <div className="relative z-10 mb-10 text-center">
-                                <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#1B253C] text-3xl text-white shadow-2xl shadow-indigo-200">🔒</div>
-                                <h1 className="text-4xl font-serif text-[#1B253C] mb-2">Admin Panel</h1>
-                                <p className="text-slate-500 font-light">Secure access for educators</p>
+                <div className="flex items-center justify-center px-4 py-16">
+                    <div className="w-full max-w-sm">
+                        <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
+                            <div className="mb-6 text-center">
+                                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-xl">🔒</div>
+                                <h1 className="text-xl font-bold text-card-foreground">Admin Access</h1>
+                                <p className="mt-1 text-sm text-muted-foreground">Enter password to continue</p>
                             </div>
-                            <form onSubmit={handlePasswordSubmit} className="relative z-10 space-y-6">
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Password (admin123)"
-                                    className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-6 py-4 text-sm font-medium text-[#1B253C] focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500"
-                                />
-                                {passwordError && <p className="text-rose-500 text-[10px] font-bold text-center">{passwordError}</p>}
-                                <button type="submit" className="w-full rounded-2xl bg-[#1B253C] py-5 text-sm font-bold text-white">Verify Identity</button>
+                            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                                <div>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => { setPassword(e.target.value); setPasswordError(""); }}
+                                        placeholder="Enter admin password"
+                                        className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                    />
+                                    {passwordError && <p className="mt-1.5 text-xs text-destructive">{passwordError}</p>}
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                                >
+                                    Unlock
+                                </button>
                             </form>
                         </div>
                     </div>
                 </div>
-                <Footer />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-[#FBF8F1] mesh-emerald">
+        <div className="min-h-screen bg-background">
             <Header />
-            <Toaster position="top-center" />
-            <div className="flex-1 mx-auto w-full max-w-5xl px-6 py-16">
-                <div className="mb-12">
-                    <h1 className="text-5xl font-serif text-[#1B253C] mb-3">Material Repository</h1>
-                    <p className="text-slate-500 font-light text-lg">Add new academic sources to the Scholar AI engine.</p>
+            <div className="mx-auto max-w-3xl px-4 py-10">
+                <h1 className="mb-1 text-2xl font-bold text-foreground">Admin Panel</h1>
+                <p className="mb-8 text-sm text-muted-foreground">Add study materials by providing a name and Google Drive link.</p>
+
+                {successMsg && (
+                    <div className="mb-6 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm font-medium text-success">
+                        {successMsg}
+                    </div>
+                )}
+
+                <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                    <form onSubmit={handleFormSubmit} className="space-y-4">
+                        <div>
+                            <label className="mb-1.5 block text-sm font-medium text-foreground">Material Name</label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="e.g., Deep Learning Notes"
+                                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                            {formErrors.name && <p className="mt-1.5 text-xs text-destructive">{formErrors.name}</p>}
+                        </div>
+                        <div>
+                            <label className="mb-1.5 block text-sm font-medium text-foreground">Google Drive Link</label>
+                            <input
+                                type="url"
+                                value={driveLink}
+                                onChange={(e) => setDriveLink(e.target.value)}
+                                placeholder="https://drive.google.com/..."
+                                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            />
+                            {formErrors.driveLink && <p className="mt-1.5 text-xs text-destructive">{formErrors.driveLink}</p>}
+                        </div>
+                        <button
+                            type="submit"
+                            className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                        >
+                            Submit Material
+                        </button>
+                    </form>
                 </div>
 
-                <div className="grid lg:grid-cols-12 gap-10">
-                    <div className="lg:col-span-5">
-                        <div className="rounded-[40px] border border-slate-100 bg-white p-10 shadow-sm sticky top-32">
-                            <h3 className="text-xl font-bold text-[#1B253C] mb-8">Add New Content</h3>
-                            <form onSubmit={handleFormSubmit} className="space-y-8">
-                                <div>
-                                    <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-slate-400">Subject Name</label>
-                                    <input
-                                        type="text"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4 text-sm font-medium text-[#1B253C]"
-                                    />
-                                    {formErrors.name && <p className="mt-2 text-[10px] text-rose-500 font-bold">{formErrors.name}</p>}
-                                </div>
-                                <div>
-                                    <label className="mb-3 block text-xs font-bold uppercase tracking-widest text-slate-400">Google Drive URL</label>
-                                    <input
-                                        type="url"
-                                        value={driveLink}
-                                        onChange={(e) => setDriveLink(e.target.value)}
-                                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4 text-sm font-medium text-[#1B253C]"
-                                    />
-                                    {formErrors.driveLink && <p className="mt-2 text-[10px] text-rose-500 font-bold">{formErrors.driveLink}</p>}
-                                </div>
-                                <button
-                                    disabled={isLoading}
-                                    type="submit"
-                                    className="w-full rounded-2xl bg-[#1B253C] py-5 text-sm font-bold text-white hover:bg-emerald-600 disabled:opacity-50 transition-all"
-                                >
-                                    {isLoading ? "Processing PDF..." : "Publish Material"}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div className="lg:col-span-7">
-                        <div className="space-y-6">
-                            <h3 className="text-xl font-bold text-[#1B253C]">Active Database ({submissions.length})</h3>
+                {/* Submissions list */}
+                {submissions.length > 0 && (
+                    <div className="mt-8">
+                        <h2 className="mb-4 text-lg font-semibold text-foreground">Submitted Materials</h2>
+                        <div className="space-y-3">
                             {submissions.map((s, i) => (
-                                <div key={i} className="flex items-center justify-between rounded-3xl border border-slate-100 bg-white px-8 py-6">
-                                    <div className="flex items-center gap-6">
-                                        <div className="h-14 w-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-2xl">📄</div>
-                                        <div>
-                                            <p className="text-lg font-bold text-[#1B253C]">{s.name}</p>
-                                            <p className="text-xs text-slate-400 truncate max-w-xs">{s.driveLink}</p>
-                                        </div>
+                                <div key={i} className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3">
+                                    <div>
+                                        <p className="text-sm font-medium text-card-foreground">{s.name}</p>
+                                        <p className="text-xs text-muted-foreground truncate max-w-md">{s.driveLink}</p>
                                     </div>
-                                    <span className="px-3 py-1 rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-600 uppercase">Live</span>
+                                    <span className="rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">Added</span>
                                 </div>
                             ))}
                         </div>
                     </div>
-                </div>
+                )}
             </div>
-            <Footer />
         </div>
     );
 }

@@ -1,5 +1,4 @@
 import bcrypt
-
 from mongo.init import users
 from mongo.schema import User
 
@@ -7,10 +6,13 @@ def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 def check_password(hashed: str, password: str) -> bool:
-    return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
+    try:
+        return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
+    except Exception:
+        return False
 
 def register(name: str, email: str, password: str):
-    # Hash incomming password
+    # Hash incoming password
     hashed = hash_password(password)
 
     # Check if user exists
@@ -29,17 +31,16 @@ def register(name: str, email: str, password: str):
             "id": str(data.inserted_id)
         }}
     else:
-        return {"status": 200}
+        return {"status": 200, "message": "User already exists"}
 
 def user_login(email: str, password: str):
-    hashed = hash_password(password)
     existing_user = users.find_one({"email": email})
 
-    if not check_password(hashed, password) or existing_user is None:
-        return {"status": 404}
-    else:
+    if existing_user and check_password(existing_user["password"], password):
         return {"status": 200, "data": {
             "name": existing_user["name"],
             "email": existing_user["email"],
             "id": str(existing_user["_id"])
         }}
+    else:
+        return {"status": 404, "message": "Invalid email or password"}
