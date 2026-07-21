@@ -4,21 +4,15 @@ gunicorn
 langchain
 langgraph
 langchain-openrouter
-langchain-ollama
 langchain-mongodb
 langchain-text-splitters
 langchain-community
+langchain-huggingface
+faiss-cpu
 PyPDF2
-litellm
-PyMuPDF
 gdown
-spacy
-pytextrank
-pytesseract
-ipython
 python-dotenv
-typing-extensions
 pymongo
 bcrypt
 pypdf
-sentence-transformers
+# Removed heavy: spacy, sentence-transformers, ollama, pytesseract
