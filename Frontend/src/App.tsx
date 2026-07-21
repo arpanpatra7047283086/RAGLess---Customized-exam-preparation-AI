@@ -1,10 +1,10 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
-import { HomePage } from './pages'
-import { StudyPage } from './pages/study'
-import { LoginPage } from './pages/login'
-import { SignupPage } from './pages/signup'
-import { AdminPage } from './pages/admin'
+import { HomePage } from './pages/Index'
+import { StudyPage } from './pages/Study'
+import { LoginPage } from './pages/Login'
+import { SignupPage } from './pages/Signup'
+import { AdminPage } from './pages/Admin'
 
 function App() {
 

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, type Dispatch } from "react";
+import React, { createContext, useContext, useState, type Dispatch, type ReactNode } from "react";
 
 type UserContextType = {
     userName: string
@@ -9,7 +9,7 @@ type UserContextType = {
     setUserId: Dispatch<React.SetStateAction<string>>
 }
 
-const userContextData = {
+const userContextData: UserContextType = {
     userName: "",
     userEmail: "",
     userId: "",
@@ -22,7 +22,7 @@ const userContext = createContext<UserContextType>(userContextData);
 
 export const useUserContext = () => useContext(userContext);
 
-const userContextProvider = ({ children }) => {
+const userContextProvider = ({ children }: { children: ReactNode }) => {
     const [userName, setUserName] = useState<string>("");
     const [userEmail, setUserEmail] = useState<string>("");
     const [userId, setUserId] = useState<string>("");
