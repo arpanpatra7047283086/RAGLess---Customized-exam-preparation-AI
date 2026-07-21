@@ -6,15 +6,18 @@ from typing import List
 
 from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from langchain_openrouter import ChatOpenRouter
+from langchain_openai import ChatOpenAI
 from Workflow.tool import retrieve_context
 
 load_dotenv()
 
-# Set up the model - Ensure OPENROUTER_API_KEY is in your .env
-model = ChatOpenRouter(
+# Use ChatOpenAI pointing to OpenRouter to save on package overhead
+# Ensure OPENROUTER_API_KEY is set in Render Environment Variables
+model = ChatOpenAI(
     model="openai/gpt-4o-mini",
     temperature=0.1,
+    openai_api_key=os.getenv("OPENROUTER_API_KEY"),
+    openai_api_base="https://openrouter.ai/api/v1"
 )
 
 def extract_json(text: str):
@@ -49,7 +52,6 @@ def _context_text(state: dict) -> str:
 def retrieval(state: dict):
     # If context is manually provided (e.g. for testing), use it and skip retrieval
     if state.get("context") and len(str(state["context"]).strip()) > 5:
-        print("Using provided manual context.")
         return {"context": state["context"]}
 
     query = state.get("query")
@@ -57,7 +59,6 @@ def retrieval(state: dict):
     print(f"Retrieving context for: {query} (Subject: {doc_id})")
 
     try:
-        # Pass doc_id to the retrieval tool for targeted searching
         context_data = retrieve_context.invoke({"query": query, "doc_id": doc_id})
     except Exception as e:
         print(f"Retrieval Error: {e}")
