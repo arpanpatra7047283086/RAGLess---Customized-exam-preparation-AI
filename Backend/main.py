@@ -70,7 +70,7 @@ class AgentInput(BaseModel):
     doc_id: str | None = None
     query: str
     operation: str
-    context: str | None = None
+    context: str | None = None # Added to support manual testing
 
 @app.post("/query_agent")
 def query_agent(params: AgentInput):
@@ -80,13 +80,14 @@ def query_agent(params: AgentInput):
             "doc_id": params.doc_id,
             "operation": params.operation,
             "query": params.query,
-            "context": params.context,
+            "context": params.context, # Pass the context if provided
             "messages": [HumanMessage(content=params.query)]
         })
 
         messages = response.get("messages", [])
         answer = messages[-1].content if messages else "No response generated."
 
+        # Return full object for easier testing in Postman
         return {
             "doc_id": params.doc_id,
             "operation": params.operation,

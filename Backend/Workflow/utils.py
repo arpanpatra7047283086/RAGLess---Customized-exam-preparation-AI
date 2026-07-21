@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_ollama import OllamaEmbeddings
 from langchain_community.vectorstores import FAISS
 from mongo.init import client
 
@@ -9,9 +9,8 @@ load_dotenv()
 # Path for local vector storage
 INDEX_PATH = os.path.join(os.path.dirname(__file__), "..", "faiss_index")
 
-# Using a lightweight local embedding model that fits in Render's 512MB RAM
-# This model uses approx 80MB-120MB of RAM.
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+# Using Ollama for local embeddings
+embeddings = OllamaEmbeddings(model="qwen3-embedding:0.6b")
 
 # Keep mongo client for metadata and user auth
 db = client["rag_db"]
