@@ -1,4 +1,6 @@
 fastapi[standard]
+uvicorn
+gunicorn
 langchain
 langgraph
 langchain-openrouter
