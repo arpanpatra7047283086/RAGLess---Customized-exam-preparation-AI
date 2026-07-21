@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from langchain_ollama import OllamaEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from mongo.init import client
 
@@ -9,8 +9,13 @@ load_dotenv()
 # Path for local vector storage
 INDEX_PATH = os.path.join(os.path.dirname(__file__), "..", "faiss_index")
 
-# Using Ollama for local embeddings
-embeddings = OllamaEmbeddings(model="qwen3-embedding:0.6b")
+# FIX: Use API-based embeddings to stay under Render's 512MB limit.
+# This uses 0MB of local RAM for the model itself.
+embeddings = OpenAIEmbeddings(
+    model="openai/text-embedding-3-small",
+    openai_api_key=os.getenv("OPENROUTER_API_KEY"),
+    openai_api_base="https://openrouter.ai/api/v1"
+)
 
 # Keep mongo client for metadata and user auth
 db = client["rag_db"]
