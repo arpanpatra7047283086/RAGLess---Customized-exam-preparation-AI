@@ -1,131 +1,132 @@
 import { Link } from "react-router-dom";
 import { FeatureCard } from "../components/FeatureCard";
-import { Footer } from "../components/Footer";
-import { Header } from "../components/Header";
 import { PageLayout } from "../components/PageLayout";
 
 export function HomePage() {
     return (
         <PageLayout>
-        <div className="min-h-screen flex flex-col bg-background">
-            <Header />
+            {/* Hero Section */}
+            <section className="relative overflow-hidden px-4 pt-16 pb-20 sm:pt-24 sm:pb-32 lg:px-8">
+                {/* Background Decorative Elements */}
+                <div className="absolute inset-0 -z-10 bg-[radial-gradient(45%_45%_at_50%_50%,var(--color-primary)_0%,transparent_100%)] opacity-[0.03]" />
+                <div className="absolute top-0 left-1/2 -z-10 h-[1000px] w-[1000px] -translate-x-1/2 [mask-image:radial-gradient(closest-side,white,transparent)] sm:top-[-200px]" aria-hidden="true">
+                    <circle cx="500" cy="500" r="500" fill="url(#hero-grad)" fillOpacity="0.05" />
+                    <defs>
+                        <radialGradient id="hero-grad">
+                            <stop stopColor="var(--color-primary)" />
+                            <stop offset="1" stopColor="var(--color-primary)" stopOpacity="0" />
+                        </radialGradient>
+                    </defs>
+                </div>
 
-            {/* Hero */}
-            <section className="relative overflow-hidden px-4 py-20 sm:py-28">
-                <div className="absolute inset-0 bg-linear-to-br from-hero-gradient-start/5 to-hero-gradient-end/5" />
-                <div className="relative mx-auto max-w-4xl text-center">
-                    <div className="animate-fade-in-up mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground">
-                        <span className="flex h-2 w-2 rounded-full bg-success animate-pulse-soft" />
-                        AI-Powered Learning
+                <div className="mx-auto max-w-4xl text-center">
+                    <div className="animate-fade-in mb-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-semibold text-primary">
+                        <span className="relative flex h-2 w-2">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+                            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
+                        </span>
+                        Next-Gen Study Assistant
                     </div>
-                    <h1 className="animate-fade-in-up text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl" style={{ animationDelay: "0.1s" }}>
-                        Master Any Subject with{" "}
-                        <span className="text-primary">StudyAI</span>
+
+                    <h1 className="text-balance text-4xl font-extrabold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+                        Prepare for exams with <span className="text-primary italic">Precision</span>
                     </h1>
-                    <p className="animate-fade-in-up mx-auto mt-6 max-w-2xl text-lg text-muted-foreground" style={{ animationDelay: "0.2s" }}>
-                        Select your subject, choose how you want to learn, and let AI generate summaries, flashcards, quizzes, or have a natural conversation to deepen your understanding.
+
+                    <p className="mx-auto mt-8 max-w-2xl text-pretty text-lg leading-8 text-muted-foreground sm:text-xl">
+                        RAGLess uses customized AI to transform your study materials into interactive summaries, flashcards, and quizzes. Study smarter, not harder.
                     </p>
-                    <div className="animate-fade-in-up mt-8 flex flex-wrap items-center justify-center gap-4" style={{ animationDelay: "0.3s" }}>
-                        <Link to="/study" className="inline-flex h-11 items-center rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg">
-                            Start Studying →
+
+                    <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
+                        <Link to="/study" className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-base font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98]">
+                            Start Studying Now
                         </Link>
-                        <Link to="/signup" className="inline-flex h-11 items-center rounded-lg border border-border bg-card px-6 text-sm font-semibold text-foreground transition-colors hover:bg-muted">
-                            Create Account
+                        <Link to="/docs" className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-input bg-background px-8 py-4 text-base font-bold text-foreground transition-all hover:bg-accent hover:text-accent-foreground">
+                            View Documentation
                         </Link>
                     </div>
                 </div>
             </section>
 
-            {/* Features */}
-            <section className="px-4 py-16 sm:py-20">
-                <div className="mx-auto max-w-6xl">
-                    <h2 className="mb-4 text-center text-3xl font-bold text-foreground">How It Works</h2>
-                    <p className="mx-auto mb-12 max-w-xl text-center text-muted-foreground">Choose your subject, pick a learning mode, and let our AI assistant help you prepare effectively.</p>
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Features Section */}
+            <section className="border-t border-border bg-accent/5 px-4 py-24 sm:py-32 lg:px-8">
+                <div className="mx-auto max-w-7xl">
+                    <div className="mx-auto max-w-2xl text-center mb-16 sm:mb-20">
+                        <h2 className="text-base font-bold uppercase tracking-widest text-primary">Capabilities</h2>
+                        <p className="mt-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">Everything you need to excel</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
                         <FeatureCard
                             icon={<SummaryIcon />}
-                            title="Summaries"
-                            description="Get concise, well-structured summaries of complex topics to review key concepts quickly."
-                            delay="0.1s"
+                            title="Instant Summaries"
+                            description="Condense massive PDFs into manageable bullet points and key takeaways in seconds."
+                            delay="100ms"
                         />
                         <FeatureCard
                             icon={<FlashcardIcon />}
-                            title="Flashcards"
-                            description="Auto-generated flashcards to reinforce your memory through spaced repetition."
-                            delay="0.2s"
+                            title="Smart Flashcards"
+                            description="Automatically generate Q&A pairs to test your active recall on any complex topic."
+                            delay="200ms"
                         />
                         <FeatureCard
                             icon={<QuizIcon />}
-                            title="Quizzes"
-                            description="Test your knowledge with multiple-choice quizzes and get instant feedback."
-                            delay="0.3s"
+                            title="Adaptive Quizzes"
+                            description="Challenge yourself with AI-generated multiple choice questions tailored to your material."
+                            delay="300ms"
                         />
                         <FeatureCard
                             icon={<ChatIcon />}
-                            title="Conversation"
-                            description="Have a natural conversation with AI to explore topics in depth and ask follow-up questions."
-                            delay="0.4s"
+                            title="Expert Tutor"
+                            description="Chat with your documents to clarify doubts and explore concepts deeper through dialogue."
+                            delay="400ms"
                         />
                     </div>
                 </div>
             </section>
 
-            {/* Steps */}
-            <section className="bg-surface px-4 py-16 sm:py-20">
-                <div className="mx-auto max-w-4xl">
-                    <h2 className="mb-12 text-center text-3xl font-bold text-foreground">Get Started in 3 Steps</h2>
-                    <div className="grid gap-8 sm:grid-cols-3">
-                        {[
-                            { step: "1", title: "Pick a Subject", desc: "Choose from our available subjects to focus your study session." },
-                            { step: "2", title: "Select a Mode", desc: "Summary, Flashcards, Quiz, or free Conversation — you decide." },
-                            { step: "3", title: "Learn & Download", desc: "Interact with AI, download summaries and flashcards for offline review." },
-                        ].map((s) => (
-                            <div key={s.step} className="text-center">
-                                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
-                                    {s.step}
-                                </div>
-                                <h3 className="mb-2 text-lg font-semibold text-foreground">{s.title}</h3>
-                                <p className="text-sm text-muted-foreground">{s.desc}</p>
-                            </div>
-                        ))}
+            {/* CTA Section */}
+            <section className="px-4 py-24 sm:py-32">
+                <div className="mx-auto max-w-5xl rounded-3xl bg-primary px-6 py-16 text-center shadow-2xl sm:px-16 sm:py-24">
+                    <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl">
+                        Ready to boost your grades?
+                    </h2>
+                    <p className="mx-auto mt-6 max-w-xl text-lg text-primary-foreground/80">
+                        Join thousands of students who are already using RAGLess to streamline their exam preparation.
+                    </p>
+                    <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                        <Link to="/signup" className="w-full sm:w-auto rounded-full bg-background px-8 py-4 text-base font-bold text-foreground shadow-sm hover:bg-accent transition-colors">
+                            Sign Up for Free
+                        </Link>
+                        <Link to="/login" className="text-base font-bold text-primary-foreground underline underline-offset-4 hover:opacity-80">
+                            Already have an account? Log in
+                        </Link>
                     </div>
                 </div>
             </section>
-
-            <Footer />
-        </div>
         </PageLayout>
     );
 }
 
 function SummaryIcon() {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
     );
 }
 
 function FlashcardIcon() {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3" />
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="10" x="3" y="11" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
     );
 }
 
 function QuizIcon() {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
     );
 }
 
 function ChatIcon() {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.399-.752c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
     );
 }

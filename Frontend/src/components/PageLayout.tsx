@@ -1,18 +1,19 @@
-import type { ReactNode } from 'react';
-import { GeometricBackground } from './GeometricBackground';
+import React from "react";
+import { Header } from "./Header";
+import { Footer } from "./Footer";
 
 interface PageLayoutProps {
-  children: ReactNode;
-  className?: string;
+    children: React.ReactNode;
 }
 
-export const PageLayout = ({ children, className = '' }: PageLayoutProps) => {
-  return (
-    <div className="relative min-h-screen">
-      <GeometricBackground />
-      <div className={`relative z-10 ${className}`}>
-        {children}
-      </div>
-    </div>
-  );
-};
+export function PageLayout({ children }: PageLayoutProps) {
+    return (
+        <div className="flex min-h-screen flex-col bg-background text-foreground antialiased transition-colors duration-300">
+            <Header />
+            <main className="flex-1">
+                {children}
+            </main>
+            <Footer />
+        </div>
+    );
+}
