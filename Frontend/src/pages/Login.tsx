@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Header } from "../components/Header";
+import { PageLayout } from "../components/PageLayout";
 import { login } from "../utils/API_Calls";
 import { useUserContext } from "../context/userContext";
 import { Toaster, toast } from "sonner";
@@ -29,6 +30,7 @@ export function LoginPage() {
     };
 
     return (
+        <PageLayout>
         <div className="min-h-screen bg-background">
             <Toaster />
 
@@ -78,5 +80,6 @@ export function LoginPage() {
                 </div>
             </div>
         </div>
+        </PageLayout>
     );
 }

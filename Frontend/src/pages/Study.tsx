@@ -1,14 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "../components/Header";
+import { PageLayout } from "../components/PageLayout";
 import { FlashcardsView } from "../components/study/FlashcardsView";
 import { QuizView } from "../components/study/QuizView";
 import { SummaryView } from "../components/study/SummaryView";
 import { queryAgent } from "../utils/API_Calls";
 
 const SUBJECTS = [
-    "Mathematics", "Physics", "Chemistry", "Biology",
-    "Computer Science", "Deep Learning", "Data Structures",
-    "Operating Systems", "Database Systems", "Networking",
+    { name: "Mathematics", icon: "🧮", color: "from-blue-500 to-blue-600" },
+    { name: "Physics", icon: "⚛️", color: "from-purple-500 to-purple-600" },
+    { name: "Chemistry", icon: "🧪", color: "from-pink-500 to-pink-600" },
+    { name: "Biology", icon: "🔬", color: "from-green-500 to-green-600" },
+    { name: "Computer Science", icon: "💻", color: "from-indigo-500 to-indigo-600" },
+    { name: "Deep Learning", icon: "🤖", color: "from-orange-500 to-orange-600" },
+    { name: "Data Structures", icon: "📊", color: "from-cyan-500 to-cyan-600" },
+    { name: "Operating Systems", icon: "⚙️", color: "from-red-500 to-red-600" },
+    { name: "Database Systems", icon: "🗄️", color: "from-amber-500 to-amber-600" },
+    { name: "Networking", icon: "🌐", color: "from-teal-500 to-teal-600" },
 ];
 
 type Mode = "summary" | "flashcards" | "quiz" | "chat";
@@ -33,6 +41,11 @@ export function StudyPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        setIsVisible(true);
+    }, []);
 
     const handleSend = async () => {
         if (!input.trim() || !selectedSubject) return;
@@ -71,51 +84,113 @@ export function StudyPage() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col bg-background">
+        <PageLayout>
+        <div className="flex min-h-screen flex-col bg-gradient-to-br from-white via-gray-50 to-gray-100">
+            <style>{`
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(30px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                @keyframes scaleIn {
+                    from {
+                        opacity: 0;
+                        transform: scale(0.9);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: scale(1);
+                    }
+                }
+                @keyframes slideInLeft {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                .animate-fade-in-up {
+                    animation: fadeInUp 0.6s ease-out forwards;
+                }
+                .animate-scale-in {
+                    animation: scaleIn 0.6s ease-out forwards;
+                }
+                .animate-slide-left {
+                    animation: slideInLeft 0.6s ease-out forwards;
+                }
+            `}</style>
+            
             <Header />
             <div className="flex flex-1 flex-col lg:flex-row">
-                {/* Sidebar */}
-                <aside className="w-full border-b border-border bg-card p-4 lg:w-72 lg:border-b-0 lg:border-r">
-                    {/* Subject Selection */}
-                    <div className="mb-6">
-                        <label htmlFor="subject-select" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Subject</label>
-                        <select
-                            id="subject-select"
-                            value={selectedSubject ?? ""}
-                            onChange={(e) => setSelectedSubject(e.target.value || null)}
-                            className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring appearance-none cursor-pointer"
-                        >
-                            <option value="">Select a subject...</option>
-                            {SUBJECTS.map((s) => (
-                                <option key={s} value={s}>{s}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Mode Selection */}
-                    <div>
-                        <label htmlFor="mode-select" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mode</label>
-                        <select
-                            id="mode-select"
-                            value={selectedMode}
-                            onChange={(e) => setSelectedMode(e.target.value as Mode)}
-                            className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring appearance-none cursor-pointer"
-                        >
-                            {MODES.map((m) => (
-                                <option key={m.id} value={m.id}>{m.icon} {m.label}</option>
-                            ))}
-                        </select>
-                    </div>
-                </aside>
-
                 {/* Chat Area */}
                 <main className="flex flex-1 flex-col">
                     {!selectedSubject ? (
-                        <div className="flex flex-1 items-center justify-center p-8">
-                            <div className="text-center">
-                                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent text-3xl">📚</div>
-                                <h2 className="text-xl font-semibold text-foreground">Select a Subject</h2>
-                                <p className="mt-2 text-sm text-muted-foreground">Choose a subject from the sidebar to begin your study session.</p>
+                        <div className="flex flex-1 items-center justify-center px-4 py-12">
+                            <div className="w-full max-w-6xl">
+                                {/* Header Section */}
+                                <div className={`text-center mb-16 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`} style={{ animationDelay: '0s' }}>
+                                    <h1 className="text-5xl sm:text-6xl font-black text-black mb-4">Welcome to Your Study Space</h1>
+                                    <p className="text-lg text-gray-600 max-w-2xl mx-auto">Select a subject and choose your learning mode to begin mastering your exam topics with RAGLess AI</p>
+                                </div>
+
+                                {/* Subject Grid */}
+                                <div className="mb-12">
+                                    <h2 className={`text-2xl font-bold text-black mb-8 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`} style={{ animationDelay: '0.1s' }}>Choose a Subject</h2>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                        {SUBJECTS.map((subject, idx) => (
+                                            <button
+                                                key={subject.name}
+                                                onClick={() => setSelectedSubject(subject.name)}
+                                                className={`group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95 ${isVisible ? 'animate-scale-in' : 'opacity-0'}`}
+                                                style={{ animationDelay: `${0.15 + idx * 0.05}s` }}
+                                            >
+                                                {/* Gradient Background */}
+                                                <div className={`absolute inset-0 bg-gradient-to-br ${subject.color} opacity-90 group-hover:opacity-100 transition-opacity`}></div>
+                                                
+                                                {/* Content */}
+                                                <div className="relative z-10 flex flex-col items-center justify-center h-full">
+                                                    <div className="text-5xl mb-3 group-hover:scale-110 transition-transform">{subject.icon}</div>
+                                                    <p className="text-white font-bold text-center text-sm group-hover:text-lg transition-all">{subject.name}</p>
+                                                </div>
+
+                                                {/* Shine Effect */}
+                                                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Learning Modes Section */}
+                                <div>
+                                    <h2 className={`text-2xl font-bold text-black mb-8 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`} style={{ animationDelay: '0.8s' }}>Pick Your Learning Mode</h2>
+                                    <div className="grid md:grid-cols-4 gap-4">
+                                        {MODES.map((mode, idx) => (
+                                            <button
+                                                key={mode.id}
+                                                onClick={() => setSelectedMode(mode.id)}
+                                                className={`group relative p-6 rounded-xl border-2 border-gray-300 hover:border-black bg-white hover:bg-black transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
+                                                style={{ animationDelay: `${0.85 + idx * 0.1}s` }}
+                                            >
+                                                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">{mode.icon}</div>
+                                                <p className="font-bold text-black group-hover:text-white transition-colors">{mode.label}</p>
+                                                <p className="text-xs text-gray-600 group-hover:text-gray-300 transition-colors mt-2">
+                                                    {mode.id === 'summary' && 'Get comprehensive overviews'}
+                                                    {mode.id === 'flashcards' && 'Quick memory cards'}
+                                                    {mode.id === 'quiz' && 'Test your knowledge'}
+                                                    {mode.id === 'chat' && 'Interactive conversations'}
+                                                </p>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ) : (
@@ -187,5 +262,6 @@ export function StudyPage() {
                 </main>
             </div>
         </div>
+        </PageLayout>
     );
 }

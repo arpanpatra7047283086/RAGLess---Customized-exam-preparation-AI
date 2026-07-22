@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Header } from "../components/Header";
+import { PageLayout } from "../components/PageLayout";
 
 const ADMIN_PASSWORD = "admin123"; // Frontend-only demo password
 
@@ -56,6 +57,7 @@ export function AdminPage() {
 
     if (!authenticated) {
         return (
+            <PageLayout>
             <div className="min-h-screen bg-background">
                 <Header />
                 <div className="flex items-center justify-center px-4 py-16">
@@ -88,10 +90,12 @@ export function AdminPage() {
                     </div>
                 </div>
             </div>
+            </PageLayout>
         );
     }
 
     return (
+        <PageLayout>
         <div className="min-h-screen bg-background">
             <Header />
             <div className="mx-auto max-w-3xl px-4 py-10">
@@ -156,5 +160,6 @@ export function AdminPage() {
                 )}
             </div>
         </div>
-    );
-}
+        </PageLayout>
+        );
+    }

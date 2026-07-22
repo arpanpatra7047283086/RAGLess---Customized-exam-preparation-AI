@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { FeatureCard } from "../components/FeatureCard";
 import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
+import { PageLayout } from "../components/PageLayout";
 
 export function HomePage() {
     return (
+        <PageLayout>
         <div className="min-h-screen flex flex-col bg-background">
             <Header />
 
@@ -92,6 +94,7 @@ export function HomePage() {
 
             <Footer />
         </div>
+        </PageLayout>
     );
 }
 
